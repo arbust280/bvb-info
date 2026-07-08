@@ -1,0 +1,26 @@
+# HTTP + retries
+requests>=2.31
+urllib3>=2.0
+tenacity>=8.2
+
+# Parsing
+beautifulsoup4>=4.12
+lxml>=5.0
+pandas>=2.0
+
+# Config + models
+pydantic>=2.6
+pydantic-settings>=2.2
+
+# Database
+SQLAlchemy>=2.0
+alembic>=1.13
+psycopg2-binary>=2.9
+
+# Phase 2 document parsing
+pdfplumber>=0.11
+openpyxl>=3.1
+
+# Dev / test
+pytest>=8.0
+black>=24.0
