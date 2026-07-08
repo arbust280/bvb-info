@@ -72,3 +72,7 @@ def test_news_date_is_clean(company):
                 r"\d{2}\.\d{2}\.\d{4}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?", item.date
             ), item.date
             assert len(item.date) <= 32
+
+
+def test_name_from_title(company):
+    assert company.name == "BANCA TRANSILVANIA S.A."

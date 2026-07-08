@@ -78,6 +78,19 @@ def _parse_news(soup: BeautifulSoup, symbol: str) -> list[News]:
     return items
 
 
+def _parse_name(soup: BeautifulSoup, symbol: str) -> str | None:
+    """Extract the issuer name from the page <title>.
+
+    Titles look like ``'BVB - Actiuni TLV BANCA TRANSILVANIA S.A.'``; the name
+    is whatever follows the ticker symbol.
+    """
+    if soup.title is None:
+        return None
+    title = soup.title.get_text(" ", strip=True)
+    match = re.search(rf"\b{re.escape(symbol)}\b\s+(.+)$", title)
+    return match.group(1).strip() or None if match else None
+
+
 def parse_detail_page(html: str, symbol: str) -> Company:
     """Parse a FinancialInstrumentsDetails page into a :class:`Company`.
 
@@ -91,6 +104,8 @@ def parse_detail_page(html: str, symbol: str) -> Company:
             field = normalize_label(label)
             if field and field in _COMPANY_FIELDS:
                 data[field] = normalize_value(field, value)
+        if "name" not in data or not data.get("name"):
+            data["name"] = _parse_name(soup, symbol)
         shareholders = _parse_shareholders(soup)
         news = _parse_news(soup, symbol)
         return Company(**data, shareholders=shareholders, news=news)
