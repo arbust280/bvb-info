@@ -64,12 +64,5 @@ def ro_pct(value: object) -> float | None:
     """
     if value is None:
         return None
-    s = (
-        str(value)
-        .replace("%", "")
-        .replace("+", "")
-        .replace("▲", "")
-        .replace("▼", "")
-        .strip()
-    )
+    s = str(value).replace("%", "").replace("+", "").replace("▲", "").replace("▼", "").strip()
     return ro_float(s)

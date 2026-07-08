@@ -92,9 +92,7 @@ class Index(Base):
 
 class IndexConstituent(Base):
     __tablename__ = "index_constituents"
-    __table_args__ = (
-        UniqueConstraint("index_name", "symbol", name="uq_index_constituent"),
-    )
+    __table_args__ = (UniqueConstraint("index_name", "symbol", name="uq_index_constituent"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     index_name: Mapped[str] = mapped_column(String(64), index=True)

@@ -73,9 +73,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_all.add_argument("--no-details", action="store_true")
     p_all.set_defaults(func=_cmd_update_all)
 
-    sub.add_parser("prices", help="Fetch + persist price snapshots").set_defaults(
-        func=_cmd_prices
-    )
+    sub.add_parser("prices", help="Fetch + persist price snapshots").set_defaults(func=_cmd_prices)
 
     p_co = sub.add_parser("company", help="Fetch + persist one company")
     p_co.add_argument("symbol")
@@ -85,12 +83,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_fi.add_argument("symbol")
     p_fi.set_defaults(func=_cmd_filings)
 
-    sub.add_parser("init-db", help="Create database tables").set_defaults(
-        func=_cmd_init_db
-    )
-    sub.add_parser("discover", help="Discover all symbols").set_defaults(
-        func=_cmd_discover
-    )
+    sub.add_parser("init-db", help="Create database tables").set_defaults(func=_cmd_init_db)
+    sub.add_parser("discover", help="Discover all symbols").set_defaults(func=_cmd_discover)
     return parser
 
 

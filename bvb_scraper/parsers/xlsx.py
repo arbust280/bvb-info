@@ -39,8 +39,7 @@ def extract_financials(path: str) -> list[dict]:
             }
         )
     logger.info(
-        "XLS %s: read %d sheets; financial-figure extraction not yet "
-        "implemented (Phase 2)",
+        "XLS %s: read %d sheets; financial-figure extraction not yet " "implemented (Phase 2)",
         path,
         len(sheets),
     )

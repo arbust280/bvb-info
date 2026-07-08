@@ -21,26 +21,18 @@ DEFAULT_USER_AGENT = (
 class Settings(BaseSettings):
     """Runtime configuration, sourced from env (``BVB_*``) or ``.env``."""
 
-    model_config = SettingsConfigDict(
-        env_prefix="BVB_", env_file=".env", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_prefix="BVB_", env_file=".env", extra="ignore")
 
     # ── Base + endpoint URLs (every working endpoint is preserved here) ──
     base_url: str = "https://www.bvb.ro"
     discovery_url: str = "https://www.bvb.ro/proxyshld.aspx/GetInstrumentsList"
-    trading_url: str = (
-        "https://www.bvb.ro/TradingAndStatistics/Trading/CurrentTradingDay"
-    )
+    trading_url: str = "https://www.bvb.ro/TradingAndStatistics/Trading/CurrentTradingDay"
     detail_url_tmpl: str = (
         "https://www.bvb.ro/FinancialInstruments/Details/"
         "FinancialInstrumentsDetails.aspx?s={symbol}"
     )
-    indices_url: str = (
-        "https://www.bvb.ro/FinancialInstruments/Indices/IndicesProfiles"
-    )
-    current_reports_url: str = (
-        "https://www.bvb.ro/FinancialInstruments/SelectedData/CurrentReports"
-    )
+    indices_url: str = "https://www.bvb.ro/FinancialInstruments/Indices/IndicesProfiles"
+    current_reports_url: str = "https://www.bvb.ro/FinancialInstruments/SelectedData/CurrentReports"
 
     # ── HTTP behaviour ──
     user_agent: str = DEFAULT_USER_AGENT
@@ -51,10 +43,7 @@ class Settings(BaseSettings):
     retry_backoff: float = 0.5
 
     # ── ETF postback target (ASP.NET __EVENTTARGET) ──
-    etf_event_target: str = (
-        "ctl00$ctl00$body$rightColumnPlaceHolder$"
-        "TabsCtrlInstrumentsType$lb3"
-    )
+    etf_event_target: str = "ctl00$ctl00$body$rightColumnPlaceHolder$" "TabsCtrlInstrumentsType$lb3"
 
     # ── Storage / persistence ──
     database_url: str = "sqlite:///bvb.sqlite3"
@@ -68,9 +57,7 @@ class Settings(BaseSettings):
         """Default request headers mimicking a real browser."""
         return {
             "User-Agent": self.user_agent,
-            "Accept": (
-                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-            ),
+            "Accept": ("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
             "Accept-Language": "ro-RO,ro;q=0.9,en-US;q=0.8,en;q=0.7",
             "Referer": f"{self.base_url}/",
         }

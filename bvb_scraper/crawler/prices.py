@@ -27,10 +27,10 @@ _HIDDEN_FIELDS = ("__VIEWSTATE", "__VIEWSTATEGENERATOR", "__EVENTVALIDATION")
 
 def _read_tables(html: str) -> list[pd.DataFrame]:
     try:
-        return pd.read_html(StringIO(html), flavor="lxml")
+        return pd.read_html(StringIO(html), flavor="lxml", thousands=".", decimal=",")
     except Exception:  # pragma: no cover - fallback parser
         try:
-            return pd.read_html(StringIO(html))
+            return pd.read_html(StringIO(html), thousands=".", decimal=",")
         except Exception:
             return []
 

@@ -46,7 +46,9 @@ def fetch_current_reports(session: requests.Session, symbol: str) -> list[Filing
             continue
         href = link["href"]
         # Only treat document links as filings.
-        if not any(href.lower().endswith(ext) for ext in (".pdf", ".xls", ".xlsx", ".doc", ".docx")):
+        if not any(
+            href.lower().endswith(ext) for ext in (".pdf", ".xls", ".xlsx", ".doc", ".docx")
+        ):
             continue
         cells = [c.get_text(" ", strip=True) for c in tr.find_all("td")]
         date_txt = cells[0] if cells else None

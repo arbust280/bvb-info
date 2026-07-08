@@ -29,7 +29,7 @@ def fetch_index_components(
         return []
 
     try:
-        tables = pd.read_html(StringIO(resp.text), flavor="lxml")
+        tables = pd.read_html(StringIO(resp.text), flavor="lxml", thousands=".", decimal=",")
     except Exception:
         tables = []
 
@@ -40,6 +40,9 @@ def fetch_index_components(
                 symbol = str(row.get("Simbol", "")).strip()
                 if not symbol or symbol.lower() == "nan":
                     continue
+                # 'FF' is the free-float FACTOR (0-1, e.g. '1,00'/'0,30');
+                # expose it as a percentage to match the field name.
+                ff_factor = ro_float(row.get("FF"))
                 records.append(
                     IndexComponent(
                         index=index,
@@ -47,7 +50,7 @@ def fetch_index_components(
                         company=str(row.get("Societate", "")).strip() or None,
                         shares_issued=ro_float(row.get("Actiuni")),
                         ref_price=ro_float(row.get("Pret ref.")),
-                        free_float_pct=ro_pct(row.get("FF")),
+                        free_float_pct=(ff_factor * 100 if ff_factor is not None else None),
                     )
                 )
             logger.info("index %s: %d components", index, len(records))

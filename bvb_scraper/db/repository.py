@@ -58,8 +58,18 @@ class Repository:
                 row = schema.DailyPrice(symbol=p.symbol, date=p.date)
                 self.session.add(row)
             for field in (
-                "price", "var_pct", "open", "max", "min", "avg",
-                "value_ron", "volume", "trades", "market", "last_time", "source",
+                "price",
+                "var_pct",
+                "open",
+                "max",
+                "min",
+                "avg",
+                "value_ron",
+                "volume",
+                "trades",
+                "market",
+                "last_time",
+                "source",
             ):
                 setattr(row, field, getattr(p, field))
         self.session.commit()
@@ -75,8 +85,16 @@ class Repository:
             row = schema.Company(symbol=company.symbol)
             self.session.add(row)
         for field in (
-            "isin", "name", "instrument_type", "segment", "category", "status",
-            "total_shares", "nominal_value", "share_capital", "trade_start_date",
+            "isin",
+            "name",
+            "instrument_type",
+            "segment",
+            "category",
+            "status",
+            "total_shares",
+            "nominal_value",
+            "share_capital",
+            "trade_start_date",
         ):
             setattr(row, field, getattr(company, field))
         self.session.flush()
@@ -164,9 +182,7 @@ class Repository:
     ) -> bool:
         """Return True if a resource looks changed since the last crawl."""
         row = self.session.scalar(
-            select(schema.CrawlMetadata).where(
-                schema.CrawlMetadata.resource_key == resource_key
-            )
+            select(schema.CrawlMetadata).where(schema.CrawlMetadata.resource_key == resource_key)
         )
         if row is None:
             return True
@@ -187,9 +203,7 @@ class Repository:
     ) -> None:
         """Record the latest crawl signature for a resource."""
         row = self.session.scalar(
-            select(schema.CrawlMetadata).where(
-                schema.CrawlMetadata.resource_key == resource_key
-            )
+            select(schema.CrawlMetadata).where(schema.CrawlMetadata.resource_key == resource_key)
         )
         if row is None:
             row = schema.CrawlMetadata(resource_key=resource_key)

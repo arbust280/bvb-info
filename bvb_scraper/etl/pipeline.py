@@ -144,9 +144,7 @@ def update_all(
             price_symbols = sorted({p.symbol for p in prices} | {s.symbol for s in symbols})
             logger.info("Enriching %d symbols (workers=%d)", len(price_symbols), max_workers)
             companies = _enrich_symbols(price_symbols, max_workers, repo, with_filings)
-        summary["meta"]["companies_ok"] = sum(
-            1 for c in companies.values() if not c.get("error")
-        )
+        summary["meta"]["companies_ok"] = sum(1 for c in companies.values() if not c.get("error"))
         summary["companies"] = companies
         summary["prices"] = [p.model_dump(mode="json") for p in prices]
         summary["index_components"] = {"BET": [c.model_dump() for c in components]}
