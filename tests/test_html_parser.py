@@ -60,3 +60,15 @@ def test_empty_html_no_exception():
     c = parse_detail_page("", "XYZ")
     assert c.symbol == "XYZ"
     assert c.market_cap is None
+
+
+def test_news_date_is_clean(company):
+    # The news date must be a clean date token, not merged row text.
+    import re
+
+    for item in company.news:
+        if item.date:
+            assert re.fullmatch(
+                r"\d{2}\.\d{2}\.\d{4}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?", item.date
+            ), item.date
+            assert len(item.date) <= 32

@@ -187,4 +187,10 @@ def _enrich_symbols(
                         download_filings(sym, repo=repo)
                 except Exception as exc:
                     logger.warning("persist %s failed: %s", sym, exc)
+                    # Reset the session so a single failure does not poison
+                    # persistence of every subsequent company.
+                    try:
+                        repo.session.rollback()
+                    except Exception:  # pragma: no cover - defensive
+                        pass
     return results

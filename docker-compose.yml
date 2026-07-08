@@ -26,10 +26,11 @@ services:
       BVB_LOG_LEVEL: INFO
     volumes:
       - ./storage:/app/storage
-    # Run migrations then a full update.
-    command: >
-      sh -c "alembic upgrade head &&
-             python -m bvb_scraper.main update-all --export storage/bvb_dataset.json"
+    # Override the image entrypoint so we can run a shell pipeline:
+    # migrate, then a full update.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "alembic upgrade head && python -m bvb_scraper.main update-all --export storage/bvb_dataset.json"
 
 volumes:
   pgdata:

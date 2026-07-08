@@ -8,6 +8,8 @@ minor layout changes.
 
 from __future__ import annotations
 
+import re
+
 from bs4 import BeautifulSoup
 
 from bvb_scraper.etl.normalize import RO_TO_CANONICAL, normalize_label, normalize_value
@@ -16,6 +18,9 @@ from bvb_scraper.models import Company, News, Shareholder
 from bvb_scraper.parsers.numbers import ro_float, ro_pct
 
 logger = get_logger(__name__)
+
+# Leading Romanian date (optionally with time) in a news row.
+_NEWS_DATE_RE = re.compile(r"\d{2}\.\d{2}\.\d{4}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?")
 
 # Canonical fields that Company accepts directly from label/value rows.
 _COMPANY_FIELDS = set(Company.model_fields)
@@ -62,13 +67,13 @@ def _parse_news(soup: BeautifulSoup, symbol: str) -> list[News]:
         if not text:
             continue
         link = tr.find("a", href=True)
-        cells = [c.get_text(" ", strip=True) for c in tr.find_all("td")]
-        date = cells[0] if cells else None
-        title = None
-        url = None
-        if link is not None:
-            title = link.get_text(" ", strip=True) or None
-            url = link["href"]
+        match = _NEWS_DATE_RE.search(text)
+        date = match.group(0) if match else None
+        url = link["href"] if link is not None else None
+        title = link.get_text(" ", strip=True) if link is not None else None
+        if not title:
+            # Fall back to the row text minus the date token.
+            title = _NEWS_DATE_RE.sub("", text).strip() or None
         items.append(News(symbol=symbol, date=date, title=title, url=url))
     return items
 

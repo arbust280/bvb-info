@@ -126,7 +126,12 @@ class Repository:
                 )
             ):
                 self.session.add(
-                    schema.News(symbol=company.symbol, date=n.date, title=n.title, url=n.url)
+                    schema.News(
+                        symbol=company.symbol,
+                        date=(n.date or "")[:32] or None,  # column is varchar(32)
+                        title=n.title,
+                        url=n.url,
+                    )
                 )
         self.session.commit()
         return row
