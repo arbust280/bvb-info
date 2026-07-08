@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.env
+storage/
+bvb_dataset_*.json
+*.sqlite3
+.venv/
+venv/
+.pytest_cache/
