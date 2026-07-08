@@ -25,6 +25,17 @@ from bvb_scraper.models import (
 
 logger = get_logger(__name__)
 
+# varchar widths for Company string columns; values are truncated to fit.
+_COMPANY_STR_LIMITS = {
+    "isin": 32,
+    "name": 255,
+    "instrument_type": 64,
+    "segment": 64,
+    "category": 64,
+    "status": 64,
+    "trade_start_date": 32,
+}
+
 
 class Repository:
     """Upserts and incremental bookkeeping over a SQLAlchemy session."""
@@ -96,7 +107,10 @@ class Repository:
             "share_capital",
             "trade_start_date",
         ):
-            setattr(row, field, getattr(company, field))
+            value = getattr(company, field)
+            if isinstance(value, str) and field in _COMPANY_STR_LIMITS:
+                value = value[: _COMPANY_STR_LIMITS[field]]
+            setattr(row, field, value)
         self.session.flush()
 
         # Replace shareholders snapshot.
