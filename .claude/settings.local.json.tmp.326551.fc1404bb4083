@@ -18,7 +18,8 @@
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'feat: BeautifulSoup detail parser + normalization; fix ro_float thousands-grouped integers *)",
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'feat: crawler modules \\(discover, prices+ETF, indices, companies, filings\\) *)",
       "Bash(rm -f bvb.sqlite3)",
-      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'feat: normalized SQLAlchemy schema, DB bootstrap, repository, Alembic migration *)"
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'feat: normalized SQLAlchemy schema, DB bootstrap, repository, Alembic migration *)",
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'feat: pipeline facade, JSON export, PDF/XLS Phase-2 skeletons, CLI *)"
     ]
   }
 }
