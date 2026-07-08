@@ -6,18 +6,27 @@ decimal separator (e.g. ``1.090.322,25`` -> ``1090322.25``).
 
 from __future__ import annotations
 
+import re
+
+# Matches a pure Romanian thousands-grouped integer, e.g. '598.847.469'.
+_THOUSANDS_GROUPED = re.compile(r"\d{1,3}(\.\d{3})+$")
+
 
 def ro_float(value: object) -> float | None:
     """Convert a Romanian-formatted numeric string to ``float``.
 
     Handles thousands separators ('.'), decimal comma (','), currency
-    suffixes ('lei'/'RON') and common dash placeholders. Returns ``None``
-    when the value is missing or unparseable.
+    suffixes ('lei'/'RON') and common dash placeholders. A value containing
+    only dots is treated as a thousands-grouped integer *only* when it matches
+    the grouping pattern (so a genuine decimal like ``39.82`` is preserved).
+    Returns ``None`` when the value is missing or unparseable.
 
     >>> ro_float("1.090.322,25")
     1090322.25
-    >>> ro_float("0,20")
-    0.2
+    >>> ro_float("598.847.469")
+    598847469.0
+    >>> ro_float("39.82")
+    39.82
     >>> ro_float("-") is None
     True
     """
@@ -34,6 +43,9 @@ def ro_float(value: object) -> float | None:
     elif "," in s:
         # Only comma: decimal separator.
         s = s.replace(",", ".")
+    elif "." in s and _THOUSANDS_GROUPED.match(s):
+        # Only dots, in grouping pattern: thousands separators.
+        s = s.replace(".", "")
     try:
         return float(s)
     except ValueError:

@@ -41,3 +41,16 @@ def test_ro_pct_arrow():
 
 def test_ro_pct_dash_is_none():
     assert ro_pct("-") is None
+
+
+def test_ro_float_thousands_grouped_integer():
+    assert ro_float("598.847.469") == 598847469.0
+
+
+def test_ro_float_billions_grouped_integer():
+    assert ro_float("1.090.322.225") == 1090322225.0
+
+
+def test_ro_float_decimal_dot_preserved():
+    # A genuine 2-digit decimal must not be mangled into thousands.
+    assert ro_float("39.82") == 39.82
