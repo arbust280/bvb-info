@@ -16,7 +16,9 @@
       "Bash(cat)",
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'feat: Romanian number parser \\(tested\\), models, retry adapter, thread-local sessions *)",
       "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'feat: BeautifulSoup detail parser + normalization; fix ro_float thousands-grouped integers *)",
-      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'feat: crawler modules \\(discover, prices+ETF, indices, companies, filings\\) *)"
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'feat: crawler modules \\(discover, prices+ETF, indices, companies, filings\\) *)",
+      "Bash(rm -f bvb.sqlite3)",
+      "Bash(git -c user.name=Claude -c user.email=noreply@anthropic.com commit -q -m 'feat: normalized SQLAlchemy schema, DB bootstrap, repository, Alembic migration *)"
     ]
   }
 }
