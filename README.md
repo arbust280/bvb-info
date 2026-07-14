@@ -1,23 +1,35 @@
-# BVB·INFO
+# BVB-INFO : Free API solution for BVB data | API Gratis pentru BVB 🇷🇴
 
-**Free Bucharest Stock Exchange data — a scraper, a database, an API, and a
-little terminal-style website. No key, no signup, no catch.**
+**Free Bucharest Stock Exchange data: scraper, database, API, and a terminal website. No key, no signup, fully open-source and free to use.** 
+Toate scraperele/APIurile pentru BVB erau platite, print Tiriac, Tradeville etc. Acesta este un scraper gratis de date JSON. Fara signup sau alte 
+kkturi. Ceri API, primesti, folosesti date instant in proiectul tau.
 
-🖥️ **Live:** [bvb-api.vercel.app](https://bvb-api.vercel.app) ·
-📚 **API docs:** [bvb-api.vercel.app/api/docs](https://bvb-api.vercel.app/api/docs)
+**Terminal:** [bvb-api.vercel.app](https://bvb-api.vercel.app) ·
+**API docs/Documentatie FastAPI:** [bvb-api.vercel.app/api/docs](https://bvb-api.vercel.app/api/docs)
 
 ---
 
-The Bucharest Stock Exchange publishes plenty of data, but not in a way you
+EN: The Bucharest Stock Exchange publishes plenty of data, but not in a way you
 can `curl`. This project fixes that. Every weekday after market close, a
 scraper walks BVB's own public endpoints, tidies the Romanian-formatted
 numbers into a proper schema, and loads everything into Postgres. A small
 FastAPI app then serves it two ways: as a browsable website and as a free
 JSON API.
 
-If you've ever wanted to build something on Romanian market data — a
-screener, a dashboard, a spreadsheet that updates itself — this is the
+RO: BVB-ul tine o tona de date despre companiile locale. Totusi, toate solutiile API
+pentru a extrage datele acestea sunt platite, cauzand un impas pentru persoanele
+care doresc sa faca aplicatii/websiteuri fara sa plateasca folosind aceste date. 
+Acest scraper FastAPI este rapid, nelimitat, si up-to-date (cron job cand se inchide
+marketul la ora 19).
+
+EN: If you've ever wanted to build something on Romanian market data; a
+screener, a dashboard, a spreadsheet that updates itself; this is the
 missing ingredient.
+
+RO: Daca ati vrut vreodata sa faceti orice cu datele BVB **FARA** sa platiti pentru ele
+si fara sa stati sa consumati tokenuri pe claude code sau pe codex degeaba, mai bine folositi
+acest screener/dashboard/spreedsheet cu auto update PRIN API!!! 
+
 
 ## What's in the data
 
@@ -139,14 +151,16 @@ works.
   `parsers/html.py` and `etl/normalize.py`.
 - **Chatty logs wanted** — `BVB_LOG_LEVEL=DEBUG` shows every request.
 
-## The fine print
+## DISCLAIMER
 
-Data is scraped from [bvb.ro](https://www.bvb.ro)'s public pages once per
-trading day. It can lag, gap, or be wrong — treat it as a convenience, not a
-market feed. Nothing here is investment advice. Be a good citizen: the API
-is free and unauthenticated, and the edge cache is what keeps it that way.
+BVB as well as the scraper can lag, gap, or be wrong. Treat it as a convenient market feed, not 
+an exact exact exact replica. Nothing here is investment advice obviously. Don't abuse my
+rate limits pls (pls!) 🙏🙏🙏🙏
 
 ---
 
-*Built as the ingestion layer for a Romanian answer to Fiscal.ai — and
-because someone at BVB decided against having a public API.*
+*For rate limits or broken data problems, please reach out to me at aethrex@proton.me* :)))
+*Daca aveti probleme cu coruptie de date sau orice altceva, va rog sa imi scrieti la aethrex@proton.me* :)))
+
+
+from arbust 🇷🇴 with love
