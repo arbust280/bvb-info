@@ -1,176 +1,152 @@
-# BVB Scraper — Production ETL Pipeline
+# BVB·INFO
 
-Reliable ingestion pipeline for **Bucharest Stock Exchange (BVB)** data. It
-reverse-engineers BVB's own public endpoints, normalizes the data into a
-canonical schema, and loads it into PostgreSQL (with a zero-setup SQLite
-fallback). Designed as the ingestion layer for a Romanian equivalent of
-Fiscal.ai.
+**Free Bucharest Stock Exchange data — a scraper, a database, an API, and a
+little terminal-style website. No key, no signup, no catch.**
 
-**Live:** [bvb-api.vercel.app](https://bvb-api.vercel.app) — browsable
-terminal-style frontend + free, no-auth JSON API
-([docs](https://bvb-api.vercel.app/api/docs)).
+🖥️ **Live:** [bvb-api.vercel.app](https://bvb-api.vercel.app) ·
+📚 **API docs:** [bvb-api.vercel.app/api/docs](https://bvb-api.vercel.app/api/docs)
 
-## Public API + frontend
+---
 
-`bvb_scraper/api/` is a FastAPI app serving both the website and a free
-read-only API (no key, no signup, edge-cached):
+The Bucharest Stock Exchange publishes plenty of data, but not in a way you
+can `curl`. This project fixes that. Every weekday after market close, a
+scraper walks BVB's own public endpoints, tidies the Romanian-formatted
+numbers into a proper schema, and loads everything into Postgres. A small
+FastAPI app then serves it two ways: as a browsable website and as a free
+JSON API.
 
-| Endpoint | Description |
+If you've ever wanted to build something on Romanian market data — a
+screener, a dashboard, a spreadsheet that updates itself — this is the
+missing ingredient.
+
+## What's in the data
+
+- **~400 instruments** — every listed company, fund, and ETF, with profile,
+  ISIN, segment, and share structure
+- **Daily prices** — OHLC, volume, traded value; one row per instrument per
+  session, accumulating history over time
+- **Valuation metrics** — market cap, P/E, P/BV, EPS, dividend yield
+- **Shareholders** — who owns what, in percentages and share counts
+- **Index constituents** — BET and friends
+- **Company news** — the announcement feed, per symbol
+
+## The API
+
+Everything is under `/api/v1`, everything is `GET`, and everything returns
+JSON. Responses are cached at the edge, so go ahead and hit it from your
+cron job — you'll mostly be talking to a CDN, not our database.
+
+```bash
+# What's in the dataset right now?
+curl https://bvb-api.vercel.app/api/v1/
+
+# Banca Transilvania: profile, metrics, shareholders, news, latest price
+curl https://bvb-api.vercel.app/api/v1/companies/TLV
+
+# Every company with "energ" in the name
+curl "https://bvb-api.vercel.app/api/v1/companies?search=energ"
+
+# Price history for a symbol
+curl "https://bvb-api.vercel.app/api/v1/prices?symbol=SNP&date_from=2026-07-01"
+
+# Who's in the BET index?
+curl https://bvb-api.vercel.app/api/v1/indices/BET
+```
+
+| Endpoint | What you get |
 |---|---|
-| `GET /api/v1/` | Dataset status: row counts, data-as-of, indices |
-| `GET /api/v1/companies` | List/search companies (`search`, `segment`, `category`, `limit`, `offset`) |
-| `GET /api/v1/companies/{symbol}` | Profile + latest metrics + shareholders + latest price + news |
-| `GET /api/v1/prices` | Daily prices (`symbol`, `date_from`, `date_to`, paginated) |
-| `GET /api/v1/indices` / `{name}` | Index list / constituents |
-| `GET /api/v1/news` | Company news (`symbol`, paginated) |
+| `/api/v1/` | Dataset status — counts, freshness, available indices |
+| `/api/v1/companies` | Search & filter companies (`search`, `segment`, `category`, `limit`, `offset`) |
+| `/api/v1/companies/{symbol}` | The works: profile + metrics + shareholders + news + latest price |
+| `/api/v1/prices` | Daily prices (`symbol`, `date_from`, `date_to`, paginated) |
+| `/api/v1/indices` · `/{name}` | Index list and constituents |
+| `/api/v1/news` | Announcements (`symbol`, paginated) |
 
-Run locally: `uvicorn bvb_scraper.api:app --reload` (uses
-`BVB_API_DATABASE_URL`, falling back to `BVB_DATABASE_URL`). Deployed on
-Vercel (`api/index.py` + `vercel.json`) against Neon Postgres with a
-read-only role; a GitHub Actions workflow
-(`.github/workflows/scrape.yml`) refreshes the data every weekday after
-market close.
+Interactive docs with a try-it button live at
+[`/api/docs`](https://bvb-api.vercel.app/api/docs).
 
-> Evolved from a single-file proof of concept into a modular, tested,
-> scheduler-ready package. Every original endpoint is preserved.
+## Run it yourself
 
-## Features
-
-- **Symbol discovery** via the autocomplete JSON endpoint (A–Z0–9 brute force).
-- **Live price snapshots** — all stocks + the ETF tab (ASP.NET postback).
-- **Company details** — identity, valuation metrics, shareholders, news —
-  parsed with BeautifulSoup (no regex), anchored on stable element IDs.
-- **Index constituents** (BET and others).
-- **Filings** — real `CurrentReports` discovery + content-hashed download.
-- **Normalized PostgreSQL schema** (SQLAlchemy 2.0 + Alembic); SQLite fallback.
-- **Robust HTTP** — thread-local sessions, urllib3 retries with `Retry-After`
-  and exponential backoff.
-- **Incremental** — `crawl_metadata` (etag / last-modified / content-hash).
-- **Typed models** (Pydantic v2) end to end; JSON export for debugging.
-- **Tested** — Romanian number parser, HTML/shareholder parser, normalization.
-
-## Installation
+Python 3.11+. The scraper works out of the box against a local SQLite file —
+no server, no config:
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+
+python -m bvb_scraper.main init-db      # create tables
+python -m bvb_scraper.main update-all   # scrape everything (~15 min)
+
+uvicorn bvb_scraper.api:app --reload    # website + API on :8000
 ```
 
-Requires Python 3.11+.
+That's it — open http://localhost:8000 and you have your own private copy.
 
-## Quick start (zero setup)
+Want Postgres instead? Point `BVB_DATABASE_URL` at it and run
+`alembic upgrade head` first. There's also a `docker compose up --build`
+that does Postgres + migrate + scrape in one go.
 
-Runs against a local SQLite database — no server required:
+### Scraper commands
 
-```bash
-python -m bvb_scraper.main init-db          # create tables
-python -m bvb_scraper.main discover          # sanity-check connectivity
-python -m bvb_scraper.main update-all --export storage/bvb_dataset.json
-```
-
-## Database setup
-
-Default is SQLite (`sqlite:///bvb.sqlite3`). For PostgreSQL, set:
-
-```bash
-export BVB_DATABASE_URL=postgresql+psycopg2://bvb:bvb@localhost:5432/bvb
-alembic upgrade head          # apply migrations
-python -m bvb_scraper.main update-all
-```
-
-### With Docker
-
-```bash
-docker compose up --build     # starts Postgres, migrates, runs a full update
-```
-
-## Running the crawler
-
-| Command | Description |
+| Command | Does |
 |---|---|
-| `python -m bvb_scraper.main update-all` | Full ETL: discover → prices → indices → per-symbol details |
-| `python -m bvb_scraper.main update-all --with-filings` | Also download filings per company |
-| `python -m bvb_scraper.main update-all --no-details` | Prices + indices only (fast) |
-| `python -m bvb_scraper.main prices` | Persist today's price snapshots |
-| `python -m bvb_scraper.main company TLV` | Fetch + persist one company |
-| `python -m bvb_scraper.main filings TLV` | Discover + download a company's filings |
-| `python -m bvb_scraper.main discover` | List discoverable symbols |
-| `python -m bvb_scraper.main init-db` | Create tables (SQLite/Postgres) |
+| `update-all` | Full run: discover → prices → indices → per-company details |
+| `update-all --with-filings` | …plus download filings per company |
+| `update-all --no-details` | Prices + indices only (fast) |
+| `prices` | Just today's price snapshot |
+| `company TLV` | One company, fetched and persisted |
+| `filings TLV` | Discover + download one company's filings |
+| `discover` | List every discoverable symbol |
 
-`--export PATH` writes a JSON snapshot alongside the DB load.
+All tunables (request pacing, retries, workers, log level) are `BVB_*` env
+vars — see `.env.example`.
 
-## Updating data
+## How it stays fresh
 
-Re-run `update-all` on a schedule. `daily_prices` accumulates one row per
-`(symbol, date)`, building price history over time. `crawl_metadata` records
-etag/last-modified/content-hash so unchanged resources can be skipped. The
-pipeline functions in `bvb_scraper/etl/pipeline.py` are plain callables, so a
-cron entry, Celery task, or RQ job needs no code changes:
+A GitHub Actions workflow ([`scrape.yml`](.github/workflows/scrape.yml))
+runs the full update every weekday at ~19:20 Bucharest time, after the 18:00
+close. The site shows a "DATA AS OF" stamp so you always know what session
+you're looking at.
 
-```bash
-# crontab: full refresh every weekday at 19:00
-0 19 * * 1-5  cd /path/to/bvb && .venv/bin/python -m bvb_scraper.main update-all
-```
-
-## Folder structure
+## How it's put together
 
 ```
-bvb_scraper/
-  config.py          # all configuration (env: BVB_*)
-  logging_config.py  # timestamped logging
-  session.py         # thread-local requests sessions
-  retry.py           # urllib3 Retry adapter + tenacity
-  models.py          # Pydantic domain models
-  parsers/           # numbers, html (BeautifulSoup), pdf/xlsx (Phase 2)
-  crawler/           # discover, prices, companies, indices, filings
-  etl/               # normalize (RO->canonical), pipeline (facade/API)
-  db/                # base (engine), schema (ORM), repository (upserts)
-  export.py          # JSON export
-  main.py            # CLI
-alembic/             # migrations
-tests/               # pytest unit tests + HTML fixtures
-storage/             # downloaded filings + JSON exports
-docs/superpowers/    # design spec + implementation plan
+crawler/   fetches raw HTML/JSON from bvb.ro (thread-local sessions, retries)
+parsers/   turns responses into typed Pydantic models (BeautifulSoup, no regex)
+etl/       maps Romanian labels to canonical fields, orchestrates the run
+db/        SQLAlchemy 2.0 schema + dialect-agnostic upserts (Postgres/SQLite)
+api/       FastAPI: /api/v1 JSON + the Jinja2-rendered frontend
+main.py    thin CLI over the pipeline functions
 ```
 
-## Architecture
+Design choices worth knowing: selectors anchor on stable element IDs (never
+regex over HTML), one failing company never aborts a run, and the public API
+reads through a separate read-only database role. The frontend is
+server-rendered with zero build step — one CSS file, a splash of vanilla JS.
 
-`crawler/*` fetch raw HTML/JSON from BVB via thread-local retrying sessions →
-`parsers/*` turn responses into typed Pydantic models → `etl/normalize.py`
-maps Romanian labels to canonical field names → `db/repository.py` upserts into
-the normalized schema → `etl/pipeline.py` orchestrates and exposes the API →
-`main.py` is a thin CLI. A single failing company is logged and skipped; the
-run continues.
+Adding an endpoint is a well-worn path: URL in `config.py` → fetch function
+in `crawler/` → parse in `parsers/html.py` → label map in `etl/normalize.py`
+→ table + upsert in `db/` → wire into `etl/pipeline.py` → test with a saved
+HTML fixture. The README of your dreams it is not, but `git log` shows it
+works.
 
-## Adding a new endpoint
+## When something breaks
 
-1. Add its URL to `bvb_scraper/config.py` (`Settings`).
-2. Add a fetch function in a `bvb_scraper/crawler/` module returning typed
-   models from `models.py` (add a model if needed).
-3. If it returns HTML, parse it in `parsers/html.py` with BeautifulSoup
-   (anchor on stable IDs; **never** regex). Prefer JSON endpoints when present.
-4. Add Romanian→canonical entries to `etl/normalize.py` if new labels appear.
-5. Add an ORM table in `db/schema.py` + a `Repository` upsert; generate a
-   migration: `alembic revision --autogenerate -m "add X"`.
-6. Wire it into `etl/pipeline.py` and expose a CLI subcommand in `main.py`.
-7. Add a unit test with a saved HTML fixture.
+- **Empty results / connection errors** — BVB rate-limits sometimes; retries
+  are automatic. Bump `BVB_REQUEST_DELAY` if it persists.
+- **"target database is not up to date"** — `alembic upgrade head`.
+- **Fields suddenly missing** — BVB renamed an element ID; update
+  `parsers/html.py` and `etl/normalize.py`.
+- **Chatty logs wanted** — `BVB_LOG_LEVEL=DEBUG` shows every request.
 
-## Troubleshooting
+## The fine print
 
-- **`ModuleNotFoundError`** — activate the venv and `pip install -r requirements.txt`.
-- **Empty results / connection errors** — BVB may rate-limit or be down; retries
-  and backoff are automatic. Increase `BVB_REQUEST_DELAY` / `BVB_RETRY_TOTAL`.
-- **Postgres connection refused** — ensure the server is up and
-  `BVB_DATABASE_URL` is correct; with Docker run `docker compose up db`.
-- **Alembic "target database is not up to date"** — run `alembic upgrade head`.
-- **Layout changed / fields missing** — selectors are ID-anchored; if BVB
-  renames IDs, update `parsers/html.py` and the label map in `etl/normalize.py`.
-- **Verbose HTTP logs** — set `BVB_LOG_LEVEL=DEBUG` to see every request.
+Data is scraped from [bvb.ro](https://www.bvb.ro)'s public pages once per
+trading day. It can lag, gap, or be wrong — treat it as a convenience, not a
+market feed. Nothing here is investment advice. Be a good citizen: the API
+is free and unauthenticated, and the edge cache is what keeps it that way.
 
-## Phase 2 (planned)
+---
 
-PDF/XLS financial-figure extraction (Revenue, EBIT, EBITDA, Net Income, Assets,
-Liabilities, Cash, Debt, Equity, CapEx, ...) into `financial_statements` /
-`financial_metrics`. The parser interfaces (`parsers/pdf.py`, `parsers/xlsx.py`)
-already open filings and are wired into `download_filings`; they log the
-not-yet-implemented mapping step rather than silently doing nothing.
+*Built as the ingestion layer for a Romanian answer to Fiscal.ai — and
+because someone at BVB decided against having a public API.*
