@@ -23,8 +23,31 @@
                aria-label="Filter instruments by symbol or name" aria-describedby="row-count">
         <span class="cursor" aria-hidden="true"></span>
       </div>
+      <button type="button" class="help-btn" id="legend-open" aria-haspopup="dialog">
+        <span aria-hidden="true">?</span> WHAT DO THESE MEAN
+      </button>
       <p id="row-count" class="row-count" aria-live="polite">{{ prices|length }} rows</p>
     </div>
+
+    <dialog id="legend" class="legend" aria-labelledby="legend-title">
+      <div class="legend-head">
+        <h2 id="legend-title">COLUMN LEGEND</h2>
+        <button type="button" class="legend-close" id="legend-close" aria-label="Close legend">✕</button>
+      </div>
+      <dl class="legend-list">
+        <div><dt>SYM</dt><dd>The instrument's ticker symbol on the Bucharest Stock Exchange — the short code used in every trade, quote and API call (e.g. TLV for Banca Transilvania). Click it to open the company page.</dd></div>
+        <div><dt>COMPANY</dt><dd>The issuer's registered name. Some rows are investment funds or ETFs rather than companies.</dd></div>
+        <div><dt>PRICE</dt><dd>The last price at which the instrument traded during this session, in Romanian lei (RON) per share/unit.</dd></div>
+        <div><dt>VAR%</dt><dd>Percentage change of the last price versus the previous session's reference (closing) price. Green means it closed up, red down, grey unchanged.</dd></div>
+        <div><dt>OPEN</dt><dd>The price of the first trade of the session.</dd></div>
+        <div><dt>HIGH</dt><dd>The highest trade price reached during the session.</dd></div>
+        <div><dt>LOW</dt><dd>The lowest trade price reached during the session.</dd></div>
+        <div><dt>VOLUME</dt><dd>How many shares/units changed hands over the whole session, across all trades.</dd></div>
+        <div><dt>VALUE RON</dt><dd>The total value traded during the session, in lei — the sum of price × shares over every individual trade. The table is sorted by this column, so the most actively traded instruments appear first.</dd></div>
+        <div><dt>MKT</dt><dd>The BVB market segment where the instrument trades: REGS is the main regulated market; XRS1 is the SMT/AeRO alternative market for smaller issuers, which typically trades less frequently.</dd></div>
+        <div><dt>—</dt><dd>An em-dash means the exchange published no figure — common for fund units and for instruments with no trades in the session.</dd></div>
+      </dl>
+    </dialog>
     <div class="table-scroll">
       <table class="grid" id="price-table">
         <caption class="visually-hidden">Latest daily prices for all traded instruments</caption>
@@ -100,6 +123,13 @@
 </div>
 
 <script>
+  const legend = document.getElementById("legend");
+  document.getElementById("legend-open").addEventListener("click", () => legend.showModal());
+  document.getElementById("legend-close").addEventListener("click", () => legend.close());
+  legend.addEventListener("click", e => {
+    if (e.target === legend) legend.close(); // backdrop click
+  });
+
   const input = document.getElementById("filter");
   const rows = Array.from(document.querySelectorAll("#price-table tbody tr"));
   const count = document.getElementById("row-count");

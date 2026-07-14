@@ -123,6 +123,43 @@ h2 { font-family: var(--mono); font-size: 0.8rem; font-weight: 700; letter-spaci
 .prompt:focus-within .cursor { display: none; }
 .row-count { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); margin-left: auto; }
 
+/* legend button + dialog */
+.help-btn {
+  background: none; border: 1px solid var(--line); color: var(--muted);
+  font-family: var(--mono); font-size: 0.65rem; font-weight: 500;
+  letter-spacing: 0.06em; padding: 0.35rem 0.6rem; cursor: pointer;
+}
+.help-btn:hover, .help-btn:focus-visible { border-color: var(--amber); color: var(--amber); }
+.help-btn span { color: var(--amber); font-weight: 700; }
+
+.legend {
+  margin: auto; /* restore native <dialog> centering lost to the * reset */
+  background: var(--ink-2); color: var(--text);
+  border: 1px solid var(--line); border-top: 2px solid var(--amber);
+  padding: 1.25rem 1.5rem; max-width: 44rem; width: calc(100vw - 2rem);
+  max-height: 85vh; overflow-y: auto;
+}
+.legend::backdrop { background: rgba(4, 6, 8, 0.7); backdrop-filter: blur(2px); }
+.legend-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-bottom: 0.75rem; border-bottom: 1px solid var(--line); margin-bottom: 0.5rem;
+}
+.legend-close {
+  background: none; border: none; color: var(--muted);
+  font-size: 1rem; cursor: pointer; padding: 0.2rem 0.4rem;
+}
+.legend-close:hover, .legend-close:focus-visible { color: var(--amber); }
+.legend-list div {
+  display: grid; grid-template-columns: 7.5rem 1fr; gap: 1rem;
+  padding: 0.6rem 0; border-bottom: 1px solid var(--line);
+}
+.legend-list div:last-child { border-bottom: none; }
+.legend-list dt { font-family: var(--mono); font-size: 0.75rem; font-weight: 700; color: var(--amber); }
+.legend-list dd { font-size: 0.85rem; color: var(--text); }
+@media (max-width: 600px) {
+  .legend-list div { grid-template-columns: 1fr; gap: 0.2rem; }
+}
+
 /* ── Tables ── */
 .table-scroll { overflow-x: auto; }
 table.grid {
