@@ -6,6 +6,31 @@ canonical schema, and loads it into PostgreSQL (with a zero-setup SQLite
 fallback). Designed as the ingestion layer for a Romanian equivalent of
 Fiscal.ai.
 
+**Live:** [bvb-api.vercel.app](https://bvb-api.vercel.app) — browsable
+terminal-style frontend + free, no-auth JSON API
+([docs](https://bvb-api.vercel.app/api/docs)).
+
+## Public API + frontend
+
+`bvb_scraper/api/` is a FastAPI app serving both the website and a free
+read-only API (no key, no signup, edge-cached):
+
+| Endpoint | Description |
+|---|---|
+| `GET /api/v1/` | Dataset status: row counts, data-as-of, indices |
+| `GET /api/v1/companies` | List/search companies (`search`, `segment`, `category`, `limit`, `offset`) |
+| `GET /api/v1/companies/{symbol}` | Profile + latest metrics + shareholders + latest price + news |
+| `GET /api/v1/prices` | Daily prices (`symbol`, `date_from`, `date_to`, paginated) |
+| `GET /api/v1/indices` / `{name}` | Index list / constituents |
+| `GET /api/v1/news` | Company news (`symbol`, paginated) |
+
+Run locally: `uvicorn bvb_scraper.api:app --reload` (uses
+`BVB_API_DATABASE_URL`, falling back to `BVB_DATABASE_URL`). Deployed on
+Vercel (`api/index.py` + `vercel.json`) against Neon Postgres with a
+read-only role; a GitHub Actions workflow
+(`.github/workflows/scrape.yml`) refreshes the data every weekday after
+market close.
+
 > Evolved from a single-file proof of concept into a modular, tested,
 > scheduler-ready package. Every original endpoint is preserved.
 
