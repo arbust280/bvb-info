@@ -1,0 +1,36 @@
+name: Daily BVB scrape
+
+on:
+  schedule:
+    # 16:20 UTC = 19:20 Bucharest in summer (EEST), 18:20 in winter (EET) —
+    # both after the 18:00 market close.
+    - cron: "20 16 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Migrate schema
+        env:
+          BVB_DATABASE_URL: ${{ secrets.BVB_DATABASE_URL }}
+        run: alembic upgrade head
+
+      - name: Run full update
+        env:
+          BVB_DATABASE_URL: ${{ secrets.BVB_DATABASE_URL }}
+          # Gentler pacing from CI IPs to avoid tripping BVB rate limits.
+          BVB_REQUEST_DELAY: "0.6"
+          BVB_MAX_WORKERS: "4"
+        run: python -m bvb_scraper.main update-all

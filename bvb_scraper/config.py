@@ -47,7 +47,12 @@ class Settings(BaseSettings):
 
     # ── Storage / persistence ──
     database_url: str = "sqlite:///bvb.sqlite3"
+    # Read-only connection for the public API; falls back to database_url.
+    api_database_url: str | None = None
     storage_dir: str = "storage"
+
+    # ── Public API ──
+    api_cache_seconds: int = 1800
 
     # ── Logging ──
     log_level: str = "INFO"

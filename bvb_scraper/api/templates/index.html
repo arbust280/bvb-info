@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block masthead_extra %}
+<p class="stamp"><span class="stamp-label">DATA AS OF</span> <time datetime="{{ as_of }}">{{ as_of }}</time></p>
+{% endblock %}
+
+{% block content %}
+<section class="ticker" aria-label="Dataset statistics">
+  <span class="tick"><span class="tick-k">INSTRUMENTS</span> <span class="tick-v">{{ stats.companies }}</span></span>
+  <span class="tick"><span class="tick-k">PRICE ROWS</span> <span class="tick-v">{{ stats.price_rows }}</span></span>
+  <span class="tick"><span class="tick-k">NEWS ITEMS</span> <span class="tick-v">{{ stats.news_items }}</span></span>
+  <span class="tick"><span class="tick-k">SESSION</span> <span class="tick-v">{{ as_of }}</span></span>
+  <span class="tick"><span class="tick-k">ACCESS</span> <span class="tick-v tick-accent">FREE / NO KEY</span></span>
+</section>
+
+<div class="layout">
+  <section class="board" aria-labelledby="board-title">
+    <div class="board-head">
+      <h1 id="board-title">Trading session <span class="thin">{{ as_of }}</span></h1>
+      <div class="prompt">
+        <span class="prompt-sign" aria-hidden="true">&gt;</span>
+        <input id="filter" type="search" placeholder="filter symbol or name" autocomplete="off"
+               aria-label="Filter instruments by symbol or name" aria-describedby="row-count">
+        <span class="cursor" aria-hidden="true"></span>
+      </div>
+      <p id="row-count" class="row-count" aria-live="polite">{{ prices|length }} rows</p>
+    </div>
+    <div class="table-scroll">
+      <table class="grid" id="price-table">
+        <caption class="visually-hidden">Latest daily prices for all traded instruments</caption>
+        <thead>
+          <tr>
+            <th scope="col">SYM</th>
+            <th scope="col" class="t-left">COMPANY</th>
+            <th scope="col">PRICE</th>
+            <th scope="col">VAR%</th>
+            <th scope="col">OPEN</th>
+            <th scope="col">HIGH</th>
+            <th scope="col">LOW</th>
+            <th scope="col">VOLUME</th>
+            <th scope="col">VALUE RON</th>
+            <th scope="col">MKT</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p, name in prices %}
+          <tr data-key="{{ p.symbol|lower }} {{ (name or '')|lower }}">
+            <th scope="row" class="sym"><a href="/company/{{ p.symbol }}">{{ p.symbol }}</a></th>
+            <td class="t-left co">{{ name or "—" }}</td>
+            <td>{{ p.price|num }}</td>
+            <td class="{% if p.var_pct and p.var_pct > 0 %}up{% elif p.var_pct and p.var_pct < 0 %}down{% else %}flat{% endif %}">
+              {%- if p.var_pct is not none %}{{ "%+.2f"|format(p.var_pct) }}{% else %}—{% endif -%}
+            </td>
+            <td>{{ p.open|num }}</td>
+            <td>{{ p.max|num }}</td>
+            <td>{{ p.min|num }}</td>
+            <td>{{ p.volume|num(0) }}</td>
+            <td>{{ p.value_ron|num(0) }}</td>
+            <td class="mkt">{{ p.market or "—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <aside class="rail">
+    <section class="rail-block" aria-labelledby="bet-title">
+      <h2 id="bet-title">BET INDEX <span class="thin">constituents</span></h2>
+      <table class="grid slim">
+        <caption class="visually-hidden">BET index constituents</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="t-left">SYM</th>
+            <th scope="col">REF</th>
+            <th scope="col">FF%</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in constituents %}
+          <tr>
+            <th scope="row" class="sym t-left"><a href="/company/{{ c.symbol }}">{{ c.symbol }}</a></th>
+            <td>{{ c.ref_price|num }}</td>
+            <td>{{ c.free_float_pct|num(0) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="rail-block" aria-labelledby="api-title">
+      <h2 id="api-title">FREE API <span class="thin">no key, no signup</span></h2>
+      <p class="rail-copy">Everything on this page as JSON, edge-cached, CORS-open.</p>
+      <pre class="code"><code>curl {{ request.url.scheme }}://{{ request.url.netloc }}/api/v1/companies/TLV</code></pre>
+      <p class="rail-copy">
+        <a href="/api/docs">Browse the interactive docs →</a>
+      </p>
+    </section>
+  </aside>
+</div>
+
+<script>
+  const input = document.getElementById("filter");
+  const rows = Array.from(document.querySelectorAll("#price-table tbody tr"));
+  const count = document.getElementById("row-count");
+  input.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    for (const row of rows) {
+      const hit = !q || row.dataset.key.includes(q);
+      row.hidden = !hit;
+      if (hit) shown++;
+    }
+    count.textContent = `${shown} rows`;
+  });
+</script>
+{% endblock %}

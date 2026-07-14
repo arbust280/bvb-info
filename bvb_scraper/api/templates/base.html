@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}BVB·INFO — Bucharest Stock Exchange data{% endblock %}</title>
+  <meta name="description" content="Free market data for the Bucharest Stock Exchange: daily prices, valuation metrics, shareholders and news — browsable here, free via JSON API.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Martian+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%230B0E11'/><rect x='3' y='7' width='3' height='6' fill='%23FFB000'/><rect x='7' y='4' width='3' height='9' fill='%23FFB000'/><rect x='11' y='9' width='3' height='4' fill='%23FFB000'/></svg>">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="masthead">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">▮▮▯</span>
+      <span class="brand-name">BVB·INFO</span>
+    </a>
+    <p class="masthead-sub">Bucharest Stock Exchange · free data terminal</p>
+    <nav class="masthead-nav" aria-label="Primary">
+      {% block masthead_extra %}{% endblock %}
+      <a class="api-link" href="/api/docs">API DOCS</a>
+    </nav>
+  </header>
+  <main id="main">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">
+    <p>Data scraped daily from <a href="https://www.bvb.ro" rel="external">bvb.ro</a> after market close. Not investment advice; no warranty of accuracy.</p>
+    <p>Everything on this site is free via the <a href="/api/docs">JSON API</a> — no key, no signup. Source: <a href="https://github.com/arbust280/bvb-info" rel="external">github.com/arbust280/bvb-info</a></p>
+  </footer>
+</body>
+</html>

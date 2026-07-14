@@ -7,3 +7,5 @@ bvb_dataset_*.json
 .venv/
 venv/
 .pytest_cache/
+.vercel
+.env*
